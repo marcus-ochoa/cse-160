@@ -1,9 +1,41 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Assignment 0</title>
-</head>
-<body>
-    <h1>Hello from assignment 0</h1>
-</body>
+    <head>
+        <title>Assignment 0</title>
+    </head>
+
+    <body onload="main()">
+        <canvas id="example" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+        <script src="asg0.js"></script>
+        <script src="../lib/cuon-matrix-cse160.js"></script>
+
+        <br><br>
+
+        Vector 1: 
+        <label for="vec1x">x</label>
+        <input type="text" id="vec1x" name="vec1x" />
+        <label for="vec1y">y</label>
+        <input type="text" id="vec1y" name="vec1y" />
+
+        <br><br>
+
+        Vector 2: 
+        <label for="vec2x">x</label>
+        <input type="text" id="vec2x" name="vec2x" />
+        <label for="vec2y">y</label>
+        <input type="text" id="vec2y" name="vec2y" />
+
+        <br><br>
+
+        <label for="operation-select">Select operation</label>
+        <select name="operations" id="operation-select">
+            <option value="">--Choose and option--</option>
+            <option value="add">Add</option>
+            <option value="subtract">Subtract</option>
+        </select>
+
+        <input type="button" value = "Draw" onclick="handleDrawEvent()"></input>
+    </body>
 </html>
