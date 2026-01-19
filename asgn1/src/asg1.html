@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Assignment 1</title>
+    </head>
+
+    <body onload="main()">
+        <h1>Assignment 1</h1>
+        <canvas id="webgl" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+        <script src="asg1.js"></script>
+        <script src="point.js"></script>
+        <script src="../lib/cuon-matrix-cse160.js"></script>
+
+        <br /><br />
+
+        <button type="button" id="clearButton">Clear Canvas</button>
+
+        <br /><br />
+
+        Drawing Mode:
+        <button type="button" id="squareButton">Square</button>
+        <button type="button" id="triangleButton">Triangle</button>
+        <button type="button" id="circleButton">Circle</button>
+
+        <br /><br />
+
+        Color
+        <br />
+        Red
+        <input
+            type="range"
+            min="0"
+            max="100"
+            value="100"
+            class="slider"
+            id="redSlider"
+        />
+        Green
+        <input
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            class="slider"
+            id="greenSlider"
+        />
+        Blue
+        <input
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            class="slider"
+            id="blueSlider"
+        />
+        <br /><br />
+        Shape Size
+        <input
+            type="range"
+            min="5"
+            max="40"
+            value="5"
+            class="slider"
+            id="sizeSlider"
+        />
+        Circle Segment Count
+        <input
+            type="range"
+            min="3"
+            max="24"
+            value="8"
+            class="slider"
+            id="segmentSlider"
+        />
+
+        <br /><br /><br />
+        Marcus Ochoa
+        <br />
+        mochoa14@ucsc.edu
+        <br /><br />
+        Notes to grader:
+        <br />
+        Seems to work even if it's not super robust, passes all provided vector
+        tests
+    </body>
+</html>
