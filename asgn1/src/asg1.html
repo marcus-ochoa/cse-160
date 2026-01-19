@@ -11,7 +11,13 @@
         </canvas>
         <script src="asg1.js"></script>
         <script src="point.js"></script>
-        <script src="../lib/cuon-matrix-cse160.js"></script>
+        <script src="triangle.js"></script>
+        <script src="circle.js"></script>
+        <script src="star.js"></script>
+        <script src="draw.js"></script>
+        <script src="../lib/webgl-utils.js"></script>
+        <script src="../lib/webgl-debug.js"></script>
+        <script src="../lib/cuon-utils.js"></script>
 
         <br /><br />
 
@@ -23,6 +29,7 @@
         <button type="button" id="squareButton">Square</button>
         <button type="button" id="triangleButton">Triangle</button>
         <button type="button" id="circleButton">Circle</button>
+        <button type="button" id="starButton">Star</button>
 
         <br /><br />
 
@@ -65,7 +72,7 @@
             class="slider"
             id="sizeSlider"
         />
-        Circle Segment Count
+        Circle / Star Segment Count
         <input
             type="range"
             min="3"
@@ -73,6 +80,15 @@
             value="8"
             class="slider"
             id="segmentSlider"
+        />
+        <br /><br />
+        <button type="button" id="drawImageButton">Draw A Bunny</button>
+        <br /><br />
+        <img
+            src="asg1-sketch.jpg"
+            alt="Bunny Sketch"
+            width="200"
+            height="200"
         />
 
         <br /><br /><br />
@@ -82,7 +98,8 @@
         <br /><br />
         Notes to grader:
         <br />
-        Seems to work even if it's not super robust, passes all provided vector
-        tests
+        My bonus feature is support for painting stars which also works with the
+        segment count slider. In the bunny image I hid my initials in the
+        forehead.
     </body>
 </html>

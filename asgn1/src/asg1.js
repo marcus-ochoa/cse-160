@@ -5,7 +5,7 @@ var VSHADER_SOURCE = `
     uniform float u_Size;
     void main() {
         gl_Position = a_Position;
-        gl_PointSize = 10.0;
+        gl_PointSize = u_Size;
     }
 `;
 
@@ -25,17 +25,29 @@ let a_Position;
 let u_FragColor;
 let u_Size;
 
+// Shapes render list
 let g_shapesList = [];
 
-let g_selectedColor = [1.0, 1.0, 1.0, 1.0];
-let g_size = 5;
+let g_selectedColor = [1.0, 0.0, 0.0, 1.0];
+let g_selectedSize = 5;
+let g_selectedSegments = 8;
+
+// Shape options
+const SQUARE_MODE = 0;
+const TRIANGLE_MODE = 1;
+const CIRCLE_MODE = 2;
+const STAR_MODE = 3;
+
+let g_selectedShape = SQUARE_MODE;
 
 function setupWebGL() {
     // Retrieve <canvas> element
     canvas = document.getElementById("webgl");
 
     // Get the rendering context for WebGL
-    gl = getWebGLContext(canvas);
+    // gl = getWebGLContext(canvas); // previous version
+    gl = canvas.getContext("webgl", { preserveDrawingBuffer: true }); // improved version, better performance
+
     if (!gl) {
         console.log("Failed to get the rendering context for WebGL");
         return;
@@ -72,19 +84,69 @@ function connectVariablesToGLSL() {
 }
 
 function addHTMLActions() {
-    document.getElementById('clearButton').onclick = function() { g_shapesList = []; renderAllShapes(); };
+    document.getElementById("clearButton").onclick = function () {
+        g_shapesList = [];
+        renderAllShapes();
+    };
 
-    document.getElementById('redSlider').addEventListener('mouseup', function() { g_selectedColor[0] = this.value / 100 });
-    document.getElementById('greenSlider').addEventListener('mouseup', function() { g_selectedColor[1] = this.value / 100 });
-    document.getElementById('blueSlider').addEventListener('mouseup', function() { g_selectedColor[2] = this.value / 100 });
+    document.getElementById("squareButton").onclick = function () {
+        g_selectedShape = SQUARE_MODE;
+    };
+    document.getElementById("triangleButton").onclick = function () {
+        g_selectedShape = TRIANGLE_MODE;
+    };
+    document.getElementById("circleButton").onclick = function () {
+        g_selectedShape = CIRCLE_MODE;
+    };
+    document.getElementById("starButton").onclick = function () {
+        g_selectedShape = STAR_MODE;
+    };
+
+    document.getElementById("drawImageButton").onclick = drawImage;
+
+    document
+        .getElementById("redSlider")
+        .addEventListener("mouseup", function () {
+            g_selectedColor[0] = this.value / 100;
+        });
+    document
+        .getElementById("greenSlider")
+        .addEventListener("mouseup", function () {
+            g_selectedColor[1] = this.value / 100;
+        });
+    document
+        .getElementById("blueSlider")
+        .addEventListener("mouseup", function () {
+            g_selectedColor[2] = this.value / 100;
+        });
+
+    document
+        .getElementById("sizeSlider")
+        .addEventListener("mouseup", function () {
+            g_selectedSize = this.value;
+        });
+    document
+        .getElementById("segmentSlider")
+        .addEventListener("mouseup", function () {
+            g_selectedSegments = this.value;
+        });
 }
 
 function main() {
     setupWebGL();
     connectVariablesToGLSL();
 
+    addHTMLActions();
+
     // Register function (event handler) to be called on a mouse press
     canvas.onmousedown = click;
+
+    // If the mouse is being dragged and clicked, update
+    canvas.onmousemove = function (ev) {
+        if (ev.buttons == 1) {
+            click(ev);
+        }
+    };
 
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -101,9 +163,41 @@ function click(ev) {
     x = (x - rect.left - canvas.width / 2) / (canvas.width / 2);
     y = (canvas.height / 2 - (y - rect.top)) / (canvas.height / 2);
 
-    let point  = new Point([x, y], g_selectedColor.slice(), g_selectedSize);
-    g_shapesList.push(point);
+    let point;
 
+    switch (g_selectedShape) {
+        case SQUARE_MODE:
+            point = new Point([x, y], g_selectedColor.slice(), g_selectedSize);
+            break;
+        case TRIANGLE_MODE:
+            point = new Triangle(
+                [x, y],
+                g_selectedColor.slice(),
+                g_selectedSize,
+            );
+            break;
+        case CIRCLE_MODE:
+            point = new Circle(
+                [x, y],
+                g_selectedColor.slice(),
+                g_selectedSize,
+                g_selectedSegments,
+            );
+            break;
+        case STAR_MODE:
+            point = new Star(
+                [x, y],
+                g_selectedColor.slice(),
+                g_selectedSize,
+                g_selectedSegments,
+            );
+            break;
+        default:
+            console.log("Failed to find shape mode");
+            return;
+    }
+
+    g_shapesList.push(point);
     renderAllShapes();
 }
 
