@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Assignment 2</title>
+    </head>
+
+    <body onload="main()">
+        <h1>Assignment 2</h1>
+        <canvas id="webgl" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+        <script src="asg2.js"></script>
+        <script src="point.js"></script>
+        <script src="triangle.js"></script>
+        <script src="circle.js"></script>
+        <script src="cube.js"></script>
+        <script src="star.js"></script>
+        <script src="draw.js"></script>
+        <script src="../lib/webgl-utils.js"></script>
+        <script src="../lib/webgl-debug.js"></script>
+        <script src="../lib/cuon-utils.js"></script>
+        <script src="../lib/cuon-matrix-cse160.js"></script>
+
+        <br /><br />
+
+        <span id="FPSspan">fps: 0 ms: 0</span>
+
+        <br /><br />
+
+        Animation Toggle:
+        <button type="button" id="animOnButton">On</button>
+        <button type="button" id="animOffButton">Off</button>
+
+        <br /><br />
+        
+        Leg FR Angle
+        <input
+            type="range"
+            min="-10"
+            max="10"
+            value="0"
+            class="slider"
+            id="legFRSlider"
+        />
+
+        <br /><br />
+
+        Camera Angle Y
+        <input
+            type="range"
+            min="0"
+            max="360"
+            value="0"
+            class="slider"
+            id="camAngleYSlider"
+        />
+        Camera Angle X
+        <input
+            type="range"
+            min="0"
+            max="360"
+            value="0"
+            class="slider"
+            id="camAngleXSlider"
+        />
+
+        <br /><br /><br />
+        Marcus Ochoa
+        <br />
+        mochoa14@ucsc.edu
+        <br /><br />
+        Notes to grader:
+        <br />
+        My bonus feature is support for painting stars which also works with the
+        segment count slider. In the bunny image I hid my initials in the
+        forehead.
+    </body>
+</html>
