@@ -5,74 +5,93 @@
     </head>
 
     <body onload="main()">
-        <h1>Assignment 2</h1>
+        <h1>Assignment 2: A Sloth</h1>
         <canvas id="webgl" width="400" height="400">
             Please use a browser that supports "canvas"
         </canvas>
         <script src="asg2.js"></script>
-        <script src="point.js"></script>
-        <script src="triangle.js"></script>
-        <script src="circle.js"></script>
+        <script src="triangleRenderer.js"></script>
         <script src="cube.js"></script>
-        <script src="star.js"></script>
-        <script src="draw.js"></script>
+        <script src="cone.js"></script>
         <script src="../lib/webgl-utils.js"></script>
         <script src="../lib/webgl-debug.js"></script>
         <script src="../lib/cuon-utils.js"></script>
         <script src="../lib/cuon-matrix-cse160.js"></script>
 
-        <br /><br />
+        <br />
 
-        <span id="FPSspan">fps: 0 ms: 0</span>
+        <span id="FPSspan">ms: 0 fps: 0</span>
 
-        <br /><br />
-
-        Animation Toggle:
-        <button type="button" id="animOnButton">On</button>
-        <button type="button" id="animOffButton">Off</button>
-
-        <br /><br />
+        <br />
         
-        Leg FR Angle
+        Upper Leg: Angle
+        <input
+            type="range"
+            min="-8"
+            max="8"
+            value="0"
+            class="slider"
+            id="upAngleSlider"
+        />
+        Anim <input type="checkbox" id="upAnimCheck" name="animCheck" checked />
+
+        <br />
+        
+        Middle Leg: Angle
+        <input
+            type="range"
+            min="10"
+            max="30"
+            value="0"
+            class="slider"
+            id="midAngleSlider"
+        />
+        Anim <input type="checkbox" id="midAnimCheck" name="animCheck" checked />
+
+        <br />
+        
+        Lower Leg: Angle
+        <input
+            type="range"
+            min="10"
+            max="40"
+            value="0"
+            class="slider"
+            id="lowAngleSlider"
+        />
+        Anim <input type="checkbox" id="lowAnimCheck" name="animCheck" checked />
+
+        <br />
+        
+        Claw: Angle
+        <input
+            type="range"
+            min="0"
+            max="4"
+            value="0"
+            class="slider"
+            id="clawAngleSlider"
+        />
+        Anim <input type="checkbox" id="clawAnimCheck" name="animCheck" checked />
+
+        <br />
+        
+        Head: Angle
         <input
             type="range"
             min="-10"
             max="10"
             value="0"
             class="slider"
-            id="legFRSlider"
+            id="headAngleSlider"
         />
+        Anim <input type="checkbox" id="headAnimCheck" name="animCheck" checked />
 
         <br /><br />
-
-        Camera Angle Y
-        <input
-            type="range"
-            min="0"
-            max="360"
-            value="0"
-            class="slider"
-            id="camAngleYSlider"
-        />
-        Camera Angle X
-        <input
-            type="range"
-            min="0"
-            max="360"
-            value="0"
-            class="slider"
-            id="camAngleXSlider"
-        />
-
-        <br /><br /><br />
         Marcus Ochoa
         <br />
         mochoa14@ucsc.edu
         <br /><br />
-        Notes to grader:
-        <br />
-        My bonus feature is support for painting stars which also works with the
-        segment count slider. In the bunny image I hid my initials in the
-        forehead.
+        Notes to grader: I did my best to / believe I included all extra points.
     </body>
 </html>

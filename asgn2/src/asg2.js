@@ -24,12 +24,32 @@ let gl;
 let a_Position;
 let u_FragColor;
 
-let g_globalAngleY = 0.0;
-let g_globalAngleX = 0.0;
+let triangleRenderer;
 
-let g_isAnimOn = true;
+let g_globalAngleY = 225.0;
+let g_globalAngleX = -20.0;
 
-let g_angleLegFR = -10.0;
+let g_isMainAnimOn = true;
+let g_isAltAnimOn = false;
+
+let g_rotUp = 10.0;
+let g_rotMid = 10.0;
+let g_rotLow = 10.0;
+let g_rotClaw = 4.0;
+let g_rotHead = -10.0;
+let g_bodyPosY = -0.5;
+
+let g_upAnimCheck;
+let g_midAnimCheck;
+let g_lowAnimCheck;
+let g_clawAnimCheck;
+let g_headAnimCheck;
+
+let g_upAngleSlider;
+let g_midAngleSlider;
+let g_lowAngleSlider;
+let g_clawAngleSlider;
+let g_headAngleSlider;
 
 let g_mouseDown = false;
 let g_mousePrevPos = [0.0, 0.0];
@@ -37,21 +57,29 @@ const g_camRotStep = 0.5;
 
 let g_startTime = performance.now() / 1000.0;
 let g_seconds = performance.now() / 1000.0 - g_startTime;
+let g_prevTime = performance.now();
+let g_animStartTime = 0.0;
+
+const g_colors = {
+    cafe: [0.725, 0.663, 0.608, 1.0],
+    darkGrey: [0.1, 0.1, 0.1, 1.0],
+    brown: [0.75, 0.475, 0.231, 1.0],
+}
 
 function setupWebGL() {
-    // Retrieve <canvas> element
     canvas = document.getElementById("webgl");
 
     // Get the rendering context for WebGL
-    // gl = getWebGLContext(canvas); // previous version
-    gl = canvas.getContext("webgl", { preserveDrawingBuffer: true }); // improved version, better performance
+    gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
 
     if (!gl) {
         console.log("Failed to get the rendering context for WebGL");
         return;
     }
 
-    // Enables depth test which means the depth buffer will keep track of what is in front of what
+    triangleRenderer = new TriangleRenderer(10);
+
+    // Enables depth test so the depth buffer keeps track of what is in front of what
     gl.enable(gl.DEPTH_TEST);
 }
 
@@ -62,7 +90,7 @@ function connectVariablesToGLSL() {
         return;
     }
 
-    // // Get the storage location of a_Position
+    // Get the storage location of a_Position
     a_Position = gl.getAttribLocation(gl.program, "a_Position");
     if (a_Position < 0) {
         console.log("Failed to get the storage location of a_Position");
@@ -89,39 +117,20 @@ function connectVariablesToGLSL() {
         console.log("Failed to get the storage location of u_GlobalRotateMatrix");
         return;
     }
-
-    // Set the matrix buffer to the identity matrix initially (maybe not necessary?)
-    var identityM = new Matrix4();
-    gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
 }
 
 function addHTMLActions() {
+    g_upAnimCheck = document.getElementById("upAnimCheck");
+    g_midAnimCheck = document.getElementById("midAnimCheck");
+    g_lowAnimCheck = document.getElementById("lowAnimCheck");
+    g_clawAnimCheck = document.getElementById("clawAnimCheck");
+    g_headAnimCheck = document.getElementById("headAnimCheck");
 
-    document.getElementById("animOnButton").onclick = function () {
-        g_isAnimOn = true;
-    };
-    document.getElementById("animOffButton").onclick = function () {
-        g_isAnimOn = false;
-    };
-
-    document
-        .getElementById("legFRSlider")
-        .addEventListener("mouseup", function () {
-            g_angleLegFR = this.value;
-        });
-
-    document
-        .getElementById("camAngleYSlider")
-        .addEventListener("mouseup", function () {
-            g_globalAngleY = this.value;
-            renderAllShapes();
-        });
-    document
-        .getElementById("camAngleXSlider")
-        .addEventListener("mouseup", function () {
-            g_globalAngleX = this.value;
-            renderAllShapes();
-        });
+    g_upAngleSlider = document.getElementById("upAngleSlider");
+    g_midAngleSlider = document.getElementById("midAngleSlider");
+    g_lowAngleSlider = document.getElementById("lowAngleSlider");
+    g_clawAngleSlider = document.getElementById("clawAngleSlider");
+    g_headAngleSlider = document.getElementById("headAngleSlider");
 }
 
 function main() {
@@ -130,10 +139,8 @@ function main() {
 
     addHTMLActions();
 
-    // Register function (event handler) to be called on a mouse press
+    // Register functions (event handler) to be called on mouse press/move
     canvas.onmousedown = onMouseDown;
-
-    // If the mouse is being dragged and clicked, update
     canvas.onmousemove = onMouseMove;
 
     canvas.onmouseup = function (ev) {
@@ -145,27 +152,20 @@ function main() {
     };
 
     // Specify the color for clearing <canvas>
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-    // Clear <canvas>
-    // gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // Render all shapes in main
-    // renderAllShapes();
+    gl.clearColor(0.65, 0.733, 0.627, 1.0);
 
     requestAnimationFrame(tick);
 }
 
 function tick() {
-
-    let tickStart = performance.now();
     g_seconds = performance.now() / 1000.0 - g_startTime;
 
     updateAnimation();
     renderAllShapes();
 
-    let duration = performance.now() - tickStart;
-    document.getElementById("FPSspan").textContent = "ms: " + Math.floor(duration) + " fps: " + Math.floor(10000 / duration) / 10;
+    let duration = performance.now() - g_prevTime;
+    document.getElementById("FPSspan").textContent = "ms: " + duration + " fps: " + Math.floor(1000 / duration);
+    g_prevTime = performance.now();
 
     requestAnimationFrame(tick);
 }
@@ -178,12 +178,18 @@ function onMouseDown(ev) {
     if (x < rect.left || x > rect.right) return;
     if (y < rect.top || y > rect.bottom) return;
 
+    if (ev.shiftKey) {
+        g_isMainAnimOn = false;
+        g_isAltAnimOn = true;
+        g_animStartTime = performance.now() / 1000.0;
+        return;
+    }
+
     g_mousePrevPos = [x, y];
     g_mouseDown = true;
 }
 
 function onMouseMove(ev) {
-    
     if (!g_mouseDown) return;
     var x = ev.clientX; // x coordinate of a mouse pointer
     var y = ev.clientY; // y coordinate of a mouse pointer
@@ -200,13 +206,40 @@ function onMouseMove(ev) {
 }
 
 function updateAnimation() {
-    if (g_isAnimOn) {
-        g_angleLegFR = -10.0 * Math.sin(g_seconds);
+    if (g_isMainAnimOn) {
+        g_rotUp = g_upAnimCheck.checked ? 8.0 * Math.sin(g_seconds) : g_upAngleSlider.value;
+        g_rotMid = g_midAnimCheck.checked ? 10.0 + 20.0 * Math.abs(Math.sin(g_seconds)) : g_midAngleSlider.value;
+        g_rotLow = g_lowAnimCheck.checked ? 10.0 + 30.0 * Math.abs(Math.sin(g_seconds)) : g_lowAngleSlider.value;
+        g_rotClaw = g_clawAnimCheck.checked ? 4.0 * Math.abs(Math.sin(g_seconds)) : g_clawAngleSlider.value;
+        g_rotHead = g_headAnimCheck.checked ? -10.0 * Math.sin(g_seconds) : g_headAngleSlider.value;
+        g_noseScale = 1.0;
+        g_bodyPosY = -0.5;
+    }
+
+    // "Keyframed" alt shift click animation
+    if (g_isAltAnimOn) {
+        let runtime = g_seconds - g_animStartTime;
+        if (runtime < 3) {
+            g_rotUp = -8.0;
+            g_rotMid = 30.0;
+            g_rotLow = 40.0;
+            g_rotClaw = 4.0;
+            g_rotHead = 10.0;
+            g_noseScale = 1.0 + 0.2 * Math.abs(Math.sin(3 * g_seconds));
+        } else if (runtime < 6) {
+            g_rotHead = -10.0 * Math.sin(8 * runtime);
+        } else if (runtime < 7) {
+            g_rotMid = 30.0 - (runtime - 6) * 50.0;
+        } else if (runtime < 10) {
+            g_bodyPosY = -0.5 - (runtime - 7) * 5.0;
+        } else {
+            g_isAltAnimOn = false;
+            g_isMainAnimOn = true;
+        }
     }
 }
 
 function renderAllShapes() {
-
     // Pass in the global rotation matrix
     var globalRotMatrix = new Matrix4().rotate(g_globalAngleX, 1.0, 0.0, 0.0).rotate(g_globalAngleY, 0.0, 1.0, 0.0);
     gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotMatrix.elements);
@@ -214,47 +247,78 @@ function renderAllShapes() {
     // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var body = new Cube([0.0, -0.4, 0.0], [0.0, 0.0, 0.0], [1.0, 0.5, 0.5], [1.0, 0.0, 0.0, 1.0]);
+    // === DRAW SCENE ===
+    var branch = new Cube([0.0, 0.25, 0.0], [45.0, 0.0, 0.0], [1.5, 0.2, 0.2], g_colors.brown);
+    branch.render();
+
+    var body = new Cube([0.0, g_bodyPosY, 0.0], [0.0, 0.0, 0.0], [1.0, 0.5, 0.5], g_colors.cafe);
     body.render();
-    var head = new Cube([-0.6, -0.35, 0.0], [45.0, 0.0, -20.0], [0.5, 0.32, 0.32], [0.0, 1.0, 0.0, 1.0]);
+    var head = new Cube([-0.52, -0.18, 0,0], [g_rotHead, 0.0, -10.0], [0.5, 0.4, 0.4], g_colors.cafe, body);
     head.render();
+    var nose = new Cube([-0.25, 0.2, 0.0], [0.0, 0.0, 0.0], [0.1, 0.1 * g_noseScale, 0.15 * g_noseScale], g_colors.darkGrey, head);
+    nose.render();
 
 
-    var legFR = new Cube([-0.25, -0.22, -0.3], [g_angleLegFR, 0.0, 0.0], [0.4, 0.7, 0.1], [0.0, 0.0, 1.0, 1.0]);
-    legFR.render();
+    var upFR = new Cube([-0.25, -0.15, -0.3], [-10.0, 0.0, -g_rotUp], [0.4, 0.7, 0.1], g_colors.cafe, body);
+    upFR.render();
 
-    var legFL = new Cube([-0.25, -0.22, 0.3], [10.0, 0.0, 0.0], [0.4, 0.7, 0.1], [0.0, 0.0, 1.0, 1.0]);
-    legFL.render();
+    var upFL = new Cube([-0.25, -0.15, 0.3], [10.0, 0.0, g_rotUp], [0.4, 0.7, 0.1], g_colors.cafe, body);
+    upFL.render();
 
-    var legBR = new Cube([0.25, -0.22, -0.3], [-10.0, 0.0, 0.0], [0.4, 0.7, 0.1], [0.0, 0.0, 1.0, 1.0]);
-    legBR.render();
+    var upBR = new Cube([0.25, -0.15, -0.3], [-10.0, 0.0, -g_rotUp], [0.4, 0.7, 0.1], g_colors.cafe, body);
+    upBR.render();
 
-    var legBL = new Cube([0.25, -0.22, 0.3], [10.0, 0.0, 0.0], [0.4, 0.7, 0.1], [0.0, 0.0, 1.0, 1.0]);
-    legBL.render();
-
-
-    var calfFR = new Cube([0.0, 0.5, 0.06], [20.0, 0.0, 0.0], [0.3, 0.45, 0.1], [0.0, 1.0, 1.0, 1.0], legFR);
-    calfFR.render();
-
-    var calfFL = new Cube([0.0, 0.5, -0.06], [-20.0, 0.0, 0.0], [0.3, 0.45, 0.1], [0.0, 1.0, 1.0, 1.0], legFL);
-    calfFL.render();
-
-    var calfBR = new Cube([0.0, 0.5, 0.06], [20.0, 0.0, 0.0], [0.3, 0.45, 0.1], [0.0, 1.0, 1.0, 1.0], legBR);
-    calfBR.render();
-
-    var calfBL = new Cube([0.0, 0.5, -0.06], [-20.0, 0.0, 0.0], [0.3, 0.45, 0.1], [0.0, 1.0, 1.0, 1.0], legBL);
-    calfBL.render();
+    var upBL = new Cube([0.25, -0.15, 0.3], [10.0, 0.0, g_rotUp], [0.4, 0.7, 0.1], g_colors.cafe, body);
+    upBL.render();
 
 
-    var footFR = new Cube([0.0, 0.3, 0.04], [20.0, 0.0, 0.0], [0.2, 0.3, 0.1], [1.0, 1.0, 0.0, 1.0], calfFR);
-    footFR.render();
+    var midFR = new Cube([0.0, 0.6, 0.0], [g_rotMid, 0.0, 0.0], [0.3, 0.45, 0.1], g_colors.cafe, upFR);
+    midFR.render();
 
-    var footFL = new Cube([0.0, 0.3, -0.04], [-20.0, 0.0, 0.0], [0.2, 0.3, 0.1], [1.0, 1.0, 0.0, 1.0], calfFL);
-    footFL.render();
+    var midFL = new Cube([0.0, 0.6, 0.0], [-g_rotMid, 0.0, 0.0], [0.3, 0.45, 0.1], g_colors.cafe, upFL);
+    midFL.render();
 
-    var footBR = new Cube([0.0, 0.3, 0.04], [20.0, 0.0, 0.0], [0.2, 0.3, 0.1], [1.0, 1.0, 0.0, 1.0], calfBR);
-    footBR.render();
+    var midBR = new Cube([0.0, 0.6, 0.0], [g_rotMid, 0.0, 0.0], [0.3, 0.45, 0.1], g_colors.cafe, upBR);
+    midBR.render();
 
-    var footBL = new Cube([0.0, 0.3, -0.04], [-20.0, 0.0, 0.0], [0.2, 0.3, 0.1], [1.0, 1.0, 0.0, 1.0], calfBL);
-    footBL.render();    
+    var midBL = new Cube([0.0, 0.6, 0.0], [-g_rotMid, 0.0, 0.0], [0.3, 0.45, 0.1], g_colors.cafe, upBL);
+    midBL.render();
+
+
+    var lowFR = new Cube([0.0, 0.4, 0.0], [g_rotLow, 0.0, 0.0], [0.2, 0.3, 0.1], g_colors.cafe, midFR);
+    lowFR.render();
+
+    var lowFL = new Cube([0.0, 0.4, 0.0], [-g_rotLow, 0.0, 0.0], [0.2, 0.3, 0.1], g_colors.cafe, midFL);
+    lowFL.render();
+
+    var lowBR = new Cube([0.0, 0.4, 0.0], [g_rotLow, 0.0, 0.0], [0.2, 0.3, 0.1], g_colors.cafe, midBR);
+    lowBR.render();
+
+    var lowBL = new Cube([0.0, 0.4, 0.0], [-g_rotLow, 0.0, 0.0], [0.2, 0.3, 0.1], g_colors.cafe, midBL);
+    lowBL.render();
+
+
+    var aClawFR = new Cone([-0.035, 0.2, 0.0], [0.0, 0.0, -g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowFR);
+    aClawFR.render();
+
+    var bClawFR = new Cone([0.035, 0.2, 0.0], [0.0, 0.0, g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowFR);
+    bClawFR.render();
+
+    var aClawBR = new Cone([-0.035, 0.2, 0.0], [0.0, 0.0, -g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowBR);
+    aClawBR.render();
+
+    var bClawBR = new Cone([0.035, 0.2, 0.0], [0.0, 0.0, g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowBR);
+    bClawBR.render();
+
+    var aClawFL = new Cone([-0.035, 0.2, 0.0], [0.0, 0.0, -g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowFL);
+    aClawFL.render();
+
+    var bClawFL = new Cone([0.035, 0.2, 0.0], [0.0, 0.0, g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowFL);
+    bClawFL.render();
+
+    var aClawBL = new Cone([-0.035, 0.2, 0.0], [0.0, 0.0, -g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowBL);
+    aClawBL.render();
+
+    var bClawBL = new Cone([0.035, 0.2, 0.0], [0.0, 0.0, g_rotClaw], [0.13, 0.34, 0.1], g_colors.darkGrey, 8, lowBL);
+    bClawBL.render();
 }
