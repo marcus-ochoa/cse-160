@@ -35,6 +35,7 @@ let canvas;
 let gl;
 let triangleRenderer;
 let camera;
+let map;
 
 let a_Position;
 let a_TexCoord;
@@ -65,6 +66,7 @@ const g_colors = {
     white: [1.0, 1.0, 1.0, 1.0],
     black: [0.0, 0.0, 0.0, 1.0],
     grey: [0.5, 0.5, 0.5, 1.0],
+    skyBlue: [0.4, 0.7, 1.0, 1.0]
 }
 
 function setupWebGL() {
@@ -178,7 +180,9 @@ function main() {
     initTextures();
 
     triangleRenderer = new TriangleRenderer();
-    camera = new Camera();
+    camera = new Camera(60.0, [0.0, 1.5, 0.0], [0.0, 1.5, -1.0]);
+    map = new Map();
+    map.generate();
 
     // Register functions (event handler) to be called on mouse press/move
     canvas.onmousedown = onMouseDown;
@@ -246,10 +250,18 @@ function onKeydown(ev) {
 
     switch (ev.code) {
         case "KeyW":
-            camera.moveForward();
+            if (ev.shiftKey) {
+                camera.moveUp();
+            } else {
+                camera.moveForward();
+            }
             break;
         case "KeyS":
-            camera.moveBackward();
+            if (ev.shiftKey) {
+                camera.moveDown();
+            } else {
+                camera.moveBackward();
+            }
             break;
         case "KeyA":
             camera.moveLeft();
@@ -261,6 +273,10 @@ function onKeydown(ev) {
             camera.panLeft();
             break;
         case "KeyE":
+            camera.panRight();
+            break;
+        case "Space":
+            camera.moveUp();
             break;
         default:
             break;
@@ -277,6 +293,13 @@ function renderAllShapes() {
 
     // === DRAW SCENE ===
 
-    let testCube0 = new Cube([0.0, 0.0, -10.0], [0.0, 0.0, 0.0], [1.0, 1.0, 1.0], g_colors.grey, 0.9);
-    testCube0.render();
+    map.render();
+
+    let skybox = new Cube([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [100.0, 100.0, 100.0], g_colors.skyBlue, 0.0, false);
+    skybox.render();
+
+    let ground = new Cube([0.0, -0.5, 0.0], [0.0, 0.0, 0.0], [20.0, 1.0, 20.0], g_colors.brown, 0.0, true);
+    ground.render();
+
+
 }

@@ -1,9 +1,9 @@
 class Camera {
     constructor(
         fov = 60.0,
-        eye = [0, 0, 0],
-        at = [0, 0, -1],
-        up = [0, 1, 0],
+        eye = [0.0, 0.0, 0.0],
+        at = [0.0, 0.0, -1.0],
+        up = [0.0, 1.0, 0.0],
         speed = 0.05
     ) {
         this.type = "Camera";
@@ -36,13 +36,7 @@ class Camera {
         this.eye.add(f);
         this.at.add(f);
 
-        this.viewMatrix.setLookAt(
-            this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
-            this.at.elements[0], this.at.elements[1], this.at.elements[2],
-            this.up.elements[0], this.up.elements[1], this.up.elements[2]
-        );
-
-        gl.uniformMatrix4fv(u_ViewMatrix, false, this.viewMatrix.elements);
+        this.updateView();
     }
 
     moveBackward() {
@@ -51,16 +45,11 @@ class Camera {
         f.sub(this.at);
         f.normalize();
         f.mul(this.speed);
+
         this.eye.add(f);
         this.at.add(f);
 
-        this.viewMatrix.setLookAt(
-            this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
-            this.at.elements[0], this.at.elements[1], this.at.elements[2],
-            this.up.elements[0], this.up.elements[1], this.up.elements[2]
-        );
-
-        gl.uniformMatrix4fv(u_ViewMatrix, false, this.viewMatrix.elements);
+        this.updateView();
     }
 
     moveLeft() {
@@ -73,13 +62,7 @@ class Camera {
         this.eye.add(s);
         this.at.add(s);
 
-        this.viewMatrix.setLookAt(
-            this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
-            this.at.elements[0], this.at.elements[1], this.at.elements[2],
-            this.up.elements[0], this.up.elements[1], this.up.elements[2]
-        );
-
-        gl.uniformMatrix4fv(u_ViewMatrix, false, this.viewMatrix.elements);
+        this.updateView();
     }
 
     moveRight() {
@@ -93,32 +76,62 @@ class Camera {
         this.eye.add(s);
         this.at.add(s);
 
-        this.viewMatrix.setLookAt(
-            this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
-            this.at.elements[0], this.at.elements[1], this.at.elements[2],
-            this.up.elements[0], this.up.elements[1], this.up.elements[2]
-        );
+        this.updateView();
+    }
 
-        gl.uniformMatrix4fv(u_ViewMatrix, false, this.viewMatrix.elements);
+    moveUp() {
+        let u = this.up;
+        u.normalize();
+        u.mul(this.speed);
+
+        this.eye.add(u);
+        this.at.add(u);
+
+        this.updateView();
+    }
+
+    moveDown() {
+        let u = this.up;
+        u.normalize();
+        u.mul(this.speed);
+
+        this.eye.sub(u);
+        this.at.sub(u);
+
+        this.updateView();
     }
 
     panLeft() {
-        console.log(this.at);
-        console.log(this.eye);
-        console.log(this.up);
-
         let f = new Vector3();
         f.set(this.at);
         f.sub(this.eye);
+
         let rotMatrix = new Matrix4();
-        rotMatrix.setRotate(0.01, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
+        rotMatrix.setRotate(1, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
+
         let rotatedF = rotMatrix.multiplyVector3(f);
-        this.at = this.eye.add(rotatedF);
+        rotatedF.add(this.eye);
+        this.at = rotatedF;
 
-        console.log(this.at);
-        console.log(this.eye);
-        console.log(this.up);
+        this.updateView();
+    }
 
+    panRight() {
+        let f = new Vector3();
+        f.set(this.at);
+        f.sub(this.eye);
+
+        let rotMatrix = new Matrix4();
+        rotMatrix.setRotate(-1, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
+
+        let rotatedF = rotMatrix.multiplyVector3(f);
+        rotatedF.add(this.eye);
+        this.at = rotatedF;
+
+        this.updateView();
+    }
+
+    updateView() {
         this.viewMatrix.setLookAt(
             this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
             this.at.elements[0], this.at.elements[1], this.at.elements[2],

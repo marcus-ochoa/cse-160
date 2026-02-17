@@ -5,6 +5,7 @@ class Cube {
         scale = [1.0, 1.0, 1.0],
         color = [1.0, 1.0, 1.0, 1.0],
         texColorWeight = 1.0,
+        lit = true,
         parent = null,
     ) {
         this.type = "Cube";
@@ -16,6 +17,7 @@ class Cube {
         this.transferMatrix = new Matrix4();
         this.parent = parent;
         this.texColorWeight = texColorWeight;
+        this.lit = lit;
     }
 
     render() {
@@ -49,12 +51,15 @@ class Cube {
 
     drawFaces() {
         // Draw cube
-        triangleRenderer.setBaseColor([
-            this.color[0] * 0.5,
-            this.color[1] * 0.5,
-            this.color[2] * 0.5,
-            this.color[3],
-        ]);
+
+        if (this.lit) {
+            triangleRenderer.setBaseColor([
+                this.color[0] * 0.5,
+                this.color[1] * 0.5,
+                this.color[2] * 0.5,
+                this.color[3],
+            ]);
+        }
 
         triangleRenderer.setTexCoords([
             0.0, 0.0,
@@ -77,12 +82,14 @@ class Cube {
 
         triangleRenderer.render();
 
-        triangleRenderer.setBaseColor([
-            this.color[0] * 0.6,
-            this.color[1] * 0.6,
-            this.color[2] * 0.6,
-            this.color[3],
-        ]);
+        if (this.lit) {
+            triangleRenderer.setBaseColor([
+                this.color[0] * 0.6,
+                this.color[1] * 0.6,
+                this.color[2] * 0.6,
+                this.color[3],
+            ]);
+        }
 
         // left face
         triangleRenderer.setVertices([
@@ -96,12 +103,14 @@ class Cube {
 
         triangleRenderer.render();
 
-        triangleRenderer.setBaseColor([
-            this.color[0] * 0.7,
-            this.color[1] * 0.7,
-            this.color[2] * 0.7,
-            this.color[3],
-        ]);
+        if (this.lit) {
+            triangleRenderer.setBaseColor([
+                this.color[0] * 0.7,
+                this.color[1] * 0.7,
+                this.color[2] * 0.7,
+                this.color[3],
+            ]);
+        }
 
         // bottom face
         triangleRenderer.setVertices([
@@ -115,12 +124,14 @@ class Cube {
 
         triangleRenderer.render();
 
-        triangleRenderer.setBaseColor([
-            this.color[0] * 0.8,
-            this.color[1] * 0.8,
-            this.color[2] * 0.8,
-            this.color[3],
-        ]);
+        if (this.lit) {
+            triangleRenderer.setBaseColor([
+                this.color[0] * 0.8,
+                this.color[1] * 0.8,
+                this.color[2] * 0.8,
+                this.color[3],
+            ]);
+        }
 
         // front face
         triangleRenderer.setVertices([
@@ -134,12 +145,14 @@ class Cube {
 
         triangleRenderer.render();
 
-        triangleRenderer.setBaseColor([
-            this.color[0] * 0.9,
-            this.color[1] * 0.9,
-            this.color[2] * 0.9,
-            this.color[3],
-        ]);
+        if (this.lit) {
+            triangleRenderer.setBaseColor([
+                this.color[0] * 0.9,
+                this.color[1] * 0.9,
+                this.color[2] * 0.9,
+                this.color[3],
+            ]);
+        }
 
         // right face
         triangleRenderer.setVertices([
@@ -153,12 +166,14 @@ class Cube {
 
         triangleRenderer.render();
 
-        triangleRenderer.setBaseColor([
-            this.color[0] * 1.0,
-            this.color[1] * 1.0,
-            this.color[2] * 1.0,
-            this.color[3],
-        ]);
+        if (this.lit) {
+            triangleRenderer.setBaseColor([
+                this.color[0] * 1.0,
+                this.color[1] * 1.0,
+                this.color[2] * 1.0,
+                this.color[3],
+            ]);
+        }
 
         // top face
         triangleRenderer.setVertices([
