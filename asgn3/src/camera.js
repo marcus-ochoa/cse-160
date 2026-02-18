@@ -4,7 +4,9 @@ class Camera {
         eye = [0.0, 0.0, 0.0],
         at = [0.0, 0.0, -1.0],
         up = [0.0, 1.0, 0.0],
-        speed = 0.05
+        moveSpeed = 0.1,
+        lookSpeedButton = 2.0,
+        lookSpeedMouse = 1.0
     ) {
         this.type = "Camera";
         this.fov = fov;
@@ -23,7 +25,9 @@ class Camera {
         gl.uniformMatrix4fv(u_ViewMatrix, false, this.viewMatrix.elements);
         gl.uniformMatrix4fv(u_ProjectionMatrix, false, this.projectionMatrix.elements);
 
-        this.speed = speed;
+        this.moveSpeed = moveSpeed;
+        this.lookSpeedButton = lookSpeedButton;
+        this.lookSpeedMouse = lookSpeedMouse;
     }
 
     moveForward() {
@@ -31,7 +35,7 @@ class Camera {
         f.set(this.at);
         f.sub(this.eye);
         f.normalize();
-        f.mul(this.speed);
+        f.mul(this.moveSpeed);
 
         this.eye.add(f);
         this.at.add(f);
@@ -44,7 +48,7 @@ class Camera {
         f.set(this.eye);
         f.sub(this.at);
         f.normalize();
-        f.mul(this.speed);
+        f.mul(this.moveSpeed);
 
         this.eye.add(f);
         this.at.add(f);
@@ -58,7 +62,7 @@ class Camera {
         f.sub(this.eye);
         let s = Vector3.cross(this.up, f);
         s.normalize();
-        s.mul(this.speed);
+        s.mul(this.moveSpeed);
         this.eye.add(s);
         this.at.add(s);
 
@@ -71,7 +75,7 @@ class Camera {
         f.sub(this.eye);
         let s = Vector3.cross(f, this.up);
         s.normalize();
-        s.mul(this.speed);
+        s.mul(this.moveSpeed);
 
         this.eye.add(s);
         this.at.add(s);
@@ -82,7 +86,7 @@ class Camera {
     moveUp() {
         let u = this.up;
         u.normalize();
-        u.mul(this.speed);
+        u.mul(this.moveSpeed);
 
         this.eye.add(u);
         this.at.add(u);
@@ -93,7 +97,7 @@ class Camera {
     moveDown() {
         let u = this.up;
         u.normalize();
-        u.mul(this.speed);
+        u.mul(this.moveSpeed);
 
         this.eye.sub(u);
         this.at.sub(u);
@@ -107,7 +111,7 @@ class Camera {
         f.sub(this.eye);
 
         let rotMatrix = new Matrix4();
-        rotMatrix.setRotate(1, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
+        rotMatrix.setRotate(this.lookSpeedButton, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
 
         let rotatedF = rotMatrix.multiplyVector3(f);
         rotatedF.add(this.eye);
@@ -122,7 +126,22 @@ class Camera {
         f.sub(this.eye);
 
         let rotMatrix = new Matrix4();
-        rotMatrix.setRotate(-1, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
+        rotMatrix.setRotate(-this.lookSpeedButton, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
+
+        let rotatedF = rotMatrix.multiplyVector3(f);
+        rotatedF.add(this.eye);
+        this.at = rotatedF;
+
+        this.updateView();
+    }
+
+    mousePan(deltaX) {
+        let f = new Vector3();
+        f.set(this.at);
+        f.sub(this.eye);
+
+        let rotMatrix = new Matrix4();
+        rotMatrix.setRotate(this.lookSpeedMouse * -deltaX, this.up.elements[0], this.up.elements[1], this.up.elements[2]);
 
         let rotatedF = rotMatrix.multiplyVector3(f);
         rotatedF.add(this.eye);

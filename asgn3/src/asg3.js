@@ -1,6 +1,8 @@
 
 // Vertex shader program
 var VSHADER_SOURCE = `
+    precision mediump float;
+
     attribute vec4 a_Position;
     uniform mat4 u_ModelMatrix;
     uniform mat4 u_ProjectionMatrix;
@@ -9,24 +11,32 @@ var VSHADER_SOURCE = `
     attribute vec2 a_TexCoord;
     varying vec2 v_TexCoord;
 
+    attribute float a_LitScalar;
+    varying float v_LitScalar;
+
     void main() {
         gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
         v_TexCoord = a_TexCoord;
+        v_LitScalar = a_LitScalar;
     }
 `;
 
 // Fragment shader program
 var FSHADER_SOURCE = `
     precision mediump float;
-    uniform vec4 u_BaseColor;
 
+    uniform vec4 u_BaseColor;
     uniform float u_TexColorWeight;
 
     uniform sampler2D u_Sampler;
     varying vec2 v_TexCoord;
 
+    uniform float u_LitWeight;
+    varying float v_LitScalar;
+
     void main() {
-        gl_FragColor = (1.0 - u_TexColorWeight) * u_BaseColor + u_TexColorWeight * texture2D(u_Sampler, v_TexCoord);
+        vec4 unlitColor = (1.0 - u_TexColorWeight) * u_BaseColor + u_TexColorWeight * texture2D(u_Sampler, v_TexCoord);
+        gl_FragColor = unlitColor + (vec4(v_LitScalar, v_LitScalar, v_LitScalar, u_BaseColor.a) - vec4(1.0)) * unlitColor * u_LitWeight;
     }
 `;
 
@@ -39,22 +49,20 @@ let map;
 
 let a_Position;
 let a_TexCoord;
+let a_LitScalar;
 let u_ModelMatrix;
 let u_ViewMatrix;
 let u_ProjectionMatrix;
+let u_LitWeight;
 
 let u_BaseColor;
 let u_TexColorWeight;
 let u_Sampler;
 
-// let g_globalAngleY = 225.0;
-// let g_globalAngleX = -20.0;
-
 let g_mouseDown = false;
 let g_mousePrevPos = [0.0, 0.0];
 
 let g_keysEnabled = false;
-const g_camRotStep = 0.5;
 
 let g_prevTime = performance.now();
 
@@ -105,6 +113,13 @@ function connectVariablesToGLSL() {
         return;
     }
 
+    // Get the storage location of a_LitScalar
+    a_LitScalar = gl.getAttribLocation(gl.program, "a_LitScalar");
+    if (a_LitScalar < 0) {
+        console.log("Failed to get the storage location of a_LitScalar");
+        return;
+    }
+
     // Get the storage location of u_BaseColor
     u_BaseColor = gl.getUniformLocation(gl.program, "u_BaseColor");
     if (!u_BaseColor) {
@@ -146,13 +161,23 @@ function connectVariablesToGLSL() {
         console.log("Failed to get the storage location of u_Sampler");
         return;
     }
+
+    // Get the storage location of u_LitWeight
+    u_LitWeight = gl.getUniformLocation(gl.program, "u_LitWeight");
+    if (!u_LitWeight) {
+        console.log("Failed to get the storage location of u_LitWeight");
+        return;
+    }
 }
 
 function initTextures() {
-    loadTexture("floor_ground_grass.png", gl.TEXTURE0);
+    loadTexture("floor_ground_grass.png", gl.TEXTURE0, []);
+    loadTexture("floor_ground_dirt.png", gl.TEXTURE1, []);
+
+    gl.uniform1i(u_Sampler, 0);
 }
 
-function loadTexture(path, textureUnit) {
+function loadTexture(path, textureUnit, extraParams) {
     let image = new Image();
     
     if (!image) {
@@ -167,8 +192,12 @@ function loadTexture(path, textureUnit) {
         gl.activeTexture(textureUnit);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        
+        for (let i = 0; i < extraParams.length; i += 2) {
+            gl.texParameteri(gl.TEXTURE_2D, extraParams[i], extraParams[i + 1]);
+        }
+
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-        gl.uniform1i(u_Sampler, 0);
     }
 
     image.src = path;
@@ -180,8 +209,11 @@ function main() {
     initTextures();
 
     triangleRenderer = new TriangleRenderer();
+    triangleRenderer.addMesh("leafBlock", new Cube(0));
+    triangleRenderer.addMesh("dirtBlock", new Cube(1, 32.0));
+
     camera = new Camera(60.0, [0.0, 1.5, 0.0], [0.0, 1.5, -1.0]);
-    map = new Map();
+    map = new BlockMap(32, 4);
     map.generate();
 
     // Register functions (event handler) to be called on mouse press/move
@@ -198,6 +230,10 @@ function main() {
     };
 
     document.addEventListener("keydown", onKeydown);
+
+    document.getElementById("generateMapButton").onclick = function () {
+        map.generate();
+    };
 
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -235,14 +271,13 @@ function onMouseMove(ev) {
     let y = ev.clientY; // y coordinate of a mouse pointer
     
     let deltaX = x - g_mousePrevPos[0];
-    let deltaY = y - g_mousePrevPos[1];
+    // let deltaY = y - g_mousePrevPos[1];
 
-    // g_globalAngleY -= deltaX * g_camRotStep;
-    // g_globalAngleX -= deltaY * g_camRotStep;
+    camera.mousePan(deltaX);
 
     g_mousePrevPos = [x, y];
 
-    renderAllShapes();
+    // renderAllShapes();
 }
 
 function onKeydown(ev) {
@@ -278,28 +313,22 @@ function onKeydown(ev) {
         case "Space":
             camera.moveUp();
             break;
+        case "KeyF":
+            map.addBlock();
+            break;
+        case "KeyR":
+            map.deleteBlock();
+            break;
         default:
             break;
     }
 }
 
 function renderAllShapes() {
-    // Pass in the global rotation matrix
-    // let globalRotMatrix = new Matrix4().rotate(g_globalAngleX, 1.0, 0.0, 0.0).rotate(g_globalAngleY, 0.0, 1.0, 0.0);
-    // gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotMatrix.elements);
 
     // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // === DRAW SCENE ===
-
     map.render();
-
-    let skybox = new Cube([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [100.0, 100.0, 100.0], g_colors.skyBlue, 0.0, false);
-    skybox.render();
-
-    let ground = new Cube([0.0, -0.5, 0.0], [0.0, 0.0, 0.0], [20.0, 1.0, 20.0], g_colors.brown, 0.0, true);
-    ground.render();
-
-
 }

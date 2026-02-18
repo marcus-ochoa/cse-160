@@ -12,8 +12,9 @@
         <script src="asg3.js"></script>
         <script src="triangleRenderer.js"></script>
         <script src="cube.js"></script>
+        <script src="gameObject.js"></script>
         <script src="camera.js"></script>
-        <script src="map.js"></script>
+        <script src="blockMap.js"></script>
         <script src="../lib/webgl-utils.js"></script>
         <script src="../lib/webgl-debug.js"></script>
         <script src="../lib/cuon-utils.js"></script>
@@ -23,15 +24,30 @@
 
         <span id="FPSspan">ms: 0 fps: 0</span>
 
-        <br />
+        <br /><br />
+
+        <button type="button" id="generateMapButton">Click Here to Generate New Map</button>
 
         <br /><br />
-        Grass texture from Kenney Assets: https://kenney.nl/assets/retro-textures-1
+
+        === MOVEMENT ===<br />
+        WASD to move cardinally<br />
+        SHIFT + W to move up<br />
+        SHIFT + S to move down<br />
+        Q to pan left<br />
+        E to pan right<br />
+        Alternatively: <br />
+        HOLD LEFT CLICK + DRAG to pan
+        <br /><br />
+        === INTERACTION ===<br />
+        F to add block in front of you<br />
+        R to remove block in front of you<br />
+
+        <br /><br />
+        Grass and dirt textures from Kenney Assets: https://kenney.nl/assets/retro-textures-1
         <br /><br />
         Marcus Ochoa
         <br />
         mochoa14@ucsc.edu
-        <br /><br />
-        Notes to grader: I did my best to / believe I included all extra points.
     </body>
 </html>
