@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Assignment 4</title>
+    </head>
+
+    <body onload="main()">
+        <h1>Assignment 4: Lit World</h1>
+        <canvas id="webgl" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+        <script src="asg4.js"></script>
+        <script src="triangleRenderer.js"></script>
+        <script src="cube.js"></script>
+        <script src="sphere.js"></script>
+        <script src="gameObject.js"></script>
+        <script src="camera.js"></script>
+        <script src="light.js"></script>
+        <script src="blockMap.js"></script>
+        <script src="../lib/webgl-utils.js"></script>
+        <script src="../lib/webgl-debug.js"></script>
+        <script src="../lib/cuon-utils.js"></script>
+        <script src="../lib/cuon-matrix-cse160.js"></script>
+
+        <br />
+
+        <span id="FPSspan">ms: 0 fps: 0</span>
+
+        <br /><br />
+        Polar Light Angle
+        <input
+            type="range"
+            min="0"
+            max="90"
+            value="0"
+            class="slider"
+            id="polarSlider"
+        />
+        <br /><br />
+        Azimuth Light Angle
+        <input
+            type="range"
+            min="0"
+            max="360"
+            value="0"
+            class="slider"
+            id="azimuthSlider"
+        />
+        <br /><br />
+        Light Red Value
+        <input
+            type="range"
+            min="0.0"
+            max="1.0"
+            value="1.0"
+            step="0.05"
+            class="slider"
+            id="redLightSlider"
+        />
+        <br /><br />
+        Light Green Value
+        <input
+            type="range"
+            min="0.0"
+            max="1.0"
+            value="1.0"
+            step="0.05"
+            class="slider"
+            id="greenLightSlider"
+        />
+        <br /><br />
+        Light Blue Value
+        <input
+            type="range"
+            min="0.0"
+            max="1.0"
+            value="1.0"
+            step="0.05"
+            class="slider"
+            id="blueLightSlider"
+        />
+        <br /><br />
+
+        <button type="button" id="globalLitButton">Toggle Global Lighting</button>
+
+        <br /><br />
+
+        <button type="button" id="normalButton">Toggle Normal Visualization</button>
+
+        <br /><br />
+
+        <button type="button" id="mapVisibleButton">Toggle Map Visible</button>
+
+        <br /><br />
+
+        <button type="button" id="generateMapButton">Generate New Map</button>
+
+        <br /><br />
+
+        === MOVEMENT ===<br />
+        WASD to move cardinally<br />
+        SHIFT + W to move up<br />
+        SHIFT + S to move down<br />
+        Q to pan left<br />
+        E to pan right<br />
+        Alternatively: <br />
+        HOLD LEFT CLICK + DRAG to pan
+        <br /><br />
+        === INTERACTION ===<br />
+        F to add block in front of you<br />
+        R to remove block in front of you<br />
+
+        <br /><br />
+        Grass and dirt textures from Kenney Assets: https://kenney.nl/assets/retro-textures-1
+        <br /><br />
+        Marcus Ochoa
+        <br />
+        mochoa14@ucsc.edu
+    </body>
+</html>
