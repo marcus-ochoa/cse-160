@@ -24,20 +24,20 @@ const cubeLoader = new THREE.CubeTextureLoader();
 
 // https://freestylized.com/skybox/sky_02/
 const skybox = cubeLoader.load([
-    'resources/skybox/px.png',
-    'resources/skybox/nx.png',
-    'resources/skybox/py.png',
-    'resources/skybox/ny.png',
-    'resources/skybox/pz.png',
-    'resources/skybox/nz.png'
+    '../resources/skybox/px.png',
+    '../resources/skybox/nx.png',
+    '../resources/skybox/py.png',
+    '../resources/skybox/ny.png',
+    '../resources/skybox/pz.png',
+    '../resources/skybox/nz.png'
 ]);
 
 const textureLoader = new THREE.TextureLoader();
-const rockTexture = textureLoader.load( 'resources/textures/rock.jpg' );
+const rockTexture = textureLoader.load( '../resources/textures/rock.jpg' );
 rockTexture.colorSpace = THREE.SRGBColorSpace;
 
 // https://ambientcg.com/view?id=Grass005
-const grassTexture = textureLoader.load( 'resources/textures/grass.jpg' );
+const grassTexture = textureLoader.load( '../resources/textures/grass.jpg' );
 grassTexture.colorSpace = THREE.SRGBColorSpace;
 
 scene.background = skybox;
@@ -75,7 +75,7 @@ const gameManager = new GameManager(scene, camera);
 // https://poly.pizza/m/5XSc2Fka3F
 const gltfLoader = new GLTFLoader();
 
-gltfLoader.load('resources/models/cow.glb', function (gltf) {
+gltfLoader.load('../resources/models/cow.glb', function (gltf) {
     scene.add(gltf.scene);
     gameManager.setCow(gltf.scene, gltf.animations);
     renderer.setAnimationLoop(update);
@@ -99,7 +99,7 @@ function update(time) {
     }
 
     timer.update(time);
-    // objPool.update(time);
+    objPool.update(time);
     gameManager.update(timer.getDelta());
 
     renderer.render(scene, camera);

@@ -45,7 +45,7 @@ class RandObjectPool {
         }
 
         for (let i = 0; i < this.pool.length; i++) {
-            // this.scene.add(this.pool[i]);
+            this.scene.add(this.pool[i]);
             this.pool[i].visible = false;
         }
     }
