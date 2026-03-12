@@ -1,0 +1,32 @@
+h1 {
+  color: #3957ff;
+}
+
+p {
+  color: #ffffff;
+}
+
+html, body {
+   margin: 0;
+   height: 100%;
+}
+#c {
+   width: 100%;
+   height: 100%;
+   display: block;
+}
+
+#info {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+  z-index: 100;
+  display: block;
+  color: #ffffff;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+canvas:focus {
+  outline:none;
+}
